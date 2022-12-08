@@ -67,13 +67,18 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17 -D_CRT_SECURE_NO_WARNINGS /w
 link_directories(${Boost_LIBRARY_DIR})
 else()
   if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-	  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wextra -Wformat -Wformat-security -Wconversion -fexceptions -fstrict-aliasing -fstack-protector -fasynchronous-unwind-tables -fno-omit-frame-pointer -DCOMMONAPI_INTERNAL_COMPILATION -D_GLIBCXX_USE_NANOSLEEP -DBOOST_LOG_DYN_LINK -pthread -fvisibility=hidden")
+	  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wextra -Wformat -Wformat-security -Wconversion -fexceptions -fstrict-aliasing -fstack-protector -fasynchronous-unwind-tables -fno-omit-frame-pointer -DCOMMONAPI_INTERNAL_COMPILATION -D_GLIBCXX_USE_NANOSLEEP -DBOOST_LOG_DYN_LINK -fvisibility=hidden")
   elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wextra -Wformat -Wformat-security -Wconversion -Wno-ignored-attributes -Wno-unused-private-field -fexceptions -fstrict-aliasing -fstack-protector -fasynchronous-unwind-tables -fno-omit-frame-pointer -DCOMMONAPI_INTERNAL_COMPILATION -D_GLIBCXX_USE_NANOSLEEP -DBOOST_LOG_DYN_LINK -pthread -fvisibility=hidden")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wextra -Wformat -Wformat-security -Wconversion -Wno-ignored-attributes -Wno-unused-private-field -fexceptions -fstrict-aliasing -fstack-protector -fasynchronous-unwind-tables -fno-omit-frame-pointer -DCOMMONAPI_INTERNAL_COMPILATION -D_GLIBCXX_USE_NANOSLEEP -DBOOST_LOG_DYN_LINK -fvisibility=hidden")
   else()
-    message(FATAL_ERROR "Unknown compiiler: ${CMAKE_CXX_COMPILER_ID}")
+    message(FATAL_ERROR "Unknown compiler: ${CMAKE_CXX_COMPILER_ID}")
+  endif()
+
+  if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
   endif()
 endif()
+
 
 SET(MAX_LOG_LEVEL "DEBUG" CACHE STRING "maximum log level")
 message(STATUS "MAX_LOG_LEVEL is set to value: ${MAX_LOG_LEVEL}")
