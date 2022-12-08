@@ -11,6 +11,9 @@
 #ifdef _WIN32
 #include <WinSock2.h>
 #include <ws2tcpip.h>
+#elif defined(__QNX__)
+#include <sys/types.h>
+#include <unistd.h>
 #else
 #include <unistd.h>
 #include <sys/eventfd.h>
@@ -28,7 +31,7 @@ namespace CommonAPI {
 namespace SomeIP {
 
 Watch::Watch(const std::shared_ptr<Connection>& _connection) :
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__QNX__)
         pipeValue_(4)
 #else
         eventFd_(0),
@@ -159,6 +162,17 @@ Watch::Watch(const std::shared_ptr<Connection>& _connection) :
         WSACleanup();
     }
     pollFileDescriptor_.fd = pipeFileDescriptors_[0];
+#elif defined(__QNX__)
+    if (pipe(pipeFileDescriptors_) == -1) {
+        std::perror(__func__);
+    }
+    for (auto fd : pipeFileDescriptors_) {
+        int flags = fcntl(fd, F_GETFL);
+        flags |= O_NONBLOCK;
+        if (fcntl(fd, F_SETFL, flags) == -1) {
+            std::perror(__func__);
+        }
+    }
 #else
     eventFd_ = eventfd(0, EFD_NONBLOCK | EFD_SEMAPHORE);
     if (eventFd_ == -1) {
@@ -184,6 +198,9 @@ Watch::~Watch() {
     // cleanup
     closesocket(pipeFileDescriptors_[0]);
     WSACleanup();
+#elif defined(__QNX__)
+    close(pipeFileDescriptors_[0]);
+    close(pipeFileDescriptors_[1]);
 #else
     close(eventFd_);
 #endif
@@ -242,6 +259,14 @@ void Watch::pushQueue(std::shared_ptr<QueueEntry> _queueEntry) {
             printf("send failed with error: %d\n", error);
         }
     }
+#elif defined(__QNX__)
+    while (write(pipeFileDescriptors_[1], &pipeValue_, sizeof(pipeValue_)) == -1) {
+        if (errno != EAGAIN && errno != EINTR) {
+            std::perror(__func__);
+            break;
+        }
+        std::this_thread::yield();
+    }
 #else
     while (write(eventFd_, &eventFdValue_, sizeof(eventFdValue_)) == -1) {
         if (errno != EAGAIN && errno != EINTR) {
@@ -269,6 +294,15 @@ void Watch::popQueue() {
     }
     else {
         printf("recv failed with error: %d\n", WSAGetLastError());
+    }
+#elif defined(__QNX__)
+    int readValue = 0;
+    while (read(pipeFileDescriptors_[0], &readValue, sizeof(readValue)) == -1) {
+        if (errno != EAGAIN && errno != EINTR) {
+            std::perror(__func__);
+            break;
+        }
+        std::this_thread::yield();
     }
 #else
     std::uint64_t readValue(0);
