@@ -38,13 +38,13 @@ public:
     COMMONAPI_EXPORT size_t hashCode();
 
     COMMONAPI_EXPORT client_id_t getClientId();
-    COMMONAPI_EXPORT uid_t getUid() const;
-    COMMONAPI_EXPORT gid_t getGid() const;
+    COMMONAPI_EXPORT CommonAPI::uid_t getUid() const;
+    COMMONAPI_EXPORT CommonAPI::gid_t getGid() const;
 
 protected:
     client_id_t client_id_;
-    uid_t uid_;
-    gid_t gid_;
+    CommonAPI::uid_t uid_;
+    CommonAPI::gid_t gid_;
 };
 
 } // namespace SomeIP

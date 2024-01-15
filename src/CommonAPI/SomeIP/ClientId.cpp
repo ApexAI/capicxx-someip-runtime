@@ -52,11 +52,11 @@ client_id_t ClientId::getClientId() {
     return client_id_;
 }
 
-uid_t ClientId::getUid() const {
+CommonAPI::uid_t ClientId::getUid() const {
     return uid_;
 }
 
-gid_t ClientId::getGid() const {
+CommonAPI::gid_t ClientId::getGid() const {
     return gid_;
 }
 
